@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Y&Z Studio - Satu Imaji, Ribuan Cerita</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2c2c4c);
+      color: #fff;
+      overflow-x: hidden;
+    }
+    header, footer {
+      background: rgba(30, 30, 47, 0.9);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    section {
+      padding: 60px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .card {
+      background: #292944;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+    .horizontal {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-around;
+    }
+    .package {
+      flex: 1;
+      min-width: 250px;
+      background: #353558;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    .floating-btn {
+      position: fixed;
+      right: 16px;
+      bottom: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 999;
+    }
+    .floating-btn img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .scroll-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ff5a5f;
+      border: none;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://avatars.githubusercontent.com/u/17654035" alt="Yuda Avatar" class="avatar" />
+    <h1>Selamat Datang di Y&Z Studio</h1>
+    <p>Setiap karya adalah cara kami berbicara, untuk ribuan cerita</p>
+  </header>
+
+  <section id="layanan" class="card">
+    <h2>Layanan Kami</h2>
+    <p>Kami menyediakan layanan digital kreatif mulai dari desain, video editing, branding, hingga web development berbasis AI dan human creativity.</p>
+  </section>
+
+  <section id="harga" class="card">
+    <h2>Harga & Paket</h2>
+    <div class="horizontal">
+      <div class="package">
+        <h3>Basic</h3>
+        <p>Rp250.000</p>
+        <ul>
+          <li>1 Halaman</li>
+          <li>1x Revisi</li>
+          <li>Responsif Mobile</li>
+        </ul>
+      </div>
+      <div class="package">
+        <h3>Pro</h3>
+        <p>Rp450.000</p>
+        <ul>
+          <li>3 Halaman</li>
+          <li>2x Revisi</li>
+          <li>Fitur Animasi</li>
+        </ul>
+      </div>
+      <div class="package">
+        <h3>Premium</h3>
+        <p>Rp700.000</p>
+        <ul>
+          <li>5+ Halaman</li>
+          <li>Unlimited Revisi (max 7 hari)</li>
+          <li>Full Custom Fitur</li>
+        </ul>
+      </div>
+    </div>
+    <p><strong>⏳ Waktu Pengerjaan & Pembayaran</strong><br>
+    Estimasi pengerjaan minimal <strong>3 hari kerja</strong> tergantung tingkat kesulitan dan revisi. Pembayaran dilakukan melalui <strong>DANA</strong> ke nomor: <strong>+62 857-2090-6090</strong> (sama dengan WhatsApp). 50% DP di awal, dan 50% setelah final.</p>
+  </section>
+
+  <section id="fitur" class="card">
+    <h2>Fitur Unggulan</h2>
+    <ul>
+      <li>Editable semua konten dari mobile & desktop</li>
+      <li>Admin panel dengan fitur log aktivitas</li>
+      <li>Floating button dan toggle scroll</li>
+      <li>Animasi 3D dan tampilan dynamic</li>
+      <li>Responsive, smooth & ambient visual</li>
+    </ul>
+  </section>
+
+  <section id="testimoni" class="card">
+    <h2>Testimoni</h2>
+    <p>“Desainnya keren banget, bisa diedit sendiri dari HP juga. Top!” – <em>Erna, UMKM Owner</em></p>
+  </section>
+
+  <section id="faq" class="card">
+    <h2>Q&A / FAQ</h2>
+    <p><strong>Tanya:</strong> Bisa revisi sampai berapa kali?<br><strong>Jawab:</strong> Sesuai paket, maksimal 7 hari aktif setelah project selesai.</p>
+  </section>
+
+  <section id="portofolio" class="card">
+    <h2>Portofolio</h2>
+    <p>Berikut adalah contoh karya kami sebelumnya (bisa diedit langsung oleh admin):</p>
+    <p><em>“Kreatif, detail, dan cepat selesai.”</em> – Partner Proyek</p>
+  </section>
+
+  <section id="artikel" class="card">
+    <h2>Artikel</h2>
+    <p>Tips branding, tren desain, dan inspirasi usaha akan kami update secara berkala di sini.</p>
+  </section>
+
+  <section id="form-partner" class="card">
+    <h2>Form Partner</h2>
+    <p>Ingin kolaborasi dengan kami? Kirimkan data dan ide Anda melalui form ini. Admin akan merespons via WhatsApp atau email.</p>
+  </section>
+
+  <footer>
+    <p>Hak Cipta Dilindungi & Powered by AI & Human Creativity</p>
+  </footer>
+
+  <div class="floating-btn">
+    <a href="https://wa.me/6285720906090" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+    </a>
+    <a href="mailto:yudabastard84@gmail.com">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail">
+    </a>
+  </div>
+
+  <button class="scroll-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">↑</button>
+</body>
+</html>
