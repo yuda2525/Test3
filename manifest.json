@@ -1,19 +1,22 @@
 {
-  "name": "YudaTime",
-  "short_name": "YudaTime",
+  "name": "Volume++ Boost 250%",
+  "short_name": "Volume++",
+  "description": "Peningkat volume hingga 250% dengan kualitas jernih.",
+  "lang": "id",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#2196f3",
   "orientation": "portrait",
+  "background_color": "#00ffe4",
+  "theme_color": "#00ffe4",
   "icons": [
     {
-      "src": "./assets/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./assets/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
