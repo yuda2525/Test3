@@ -1,183 +1,163 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Y&Z Studio - Satu Imaji, Ribuan Cerita</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">        
+  <!-- PWA Essentials -->
+<meta name="theme-color" content="#00ffe4" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Favicon / Icon -->
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+
+<!-- SEO & Share -->
+<meta property="og:title" content="Volume Booster 250%">
+<meta property="og:description" content="Booster volume kamu sampai 250% dengan satu klik. Tanpa ribet, tanpa player tambahan.">
+<meta property="og:image" content="icon-512.png">
+<meta name="description" content="Volume Booster PWA app - naikin volume audio dari mic kamu sampai 250%.">
+  <title>Volume Booster 250%</title>
+  <link rel="manifest" href="manifest.json" />
   <style>
+    :root {
+      --accent: #00ffe4;
+      --bg: #0d0d0f;
+      --glass: rgba(255, 255, 255, 0.06);
+    }
+
     body {
+      background: var(--bg);
+      color: white;
+      font-family: sans-serif;
       margin: 0;
-      font-family: 'Outfit', sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2c2c4c);
-      color: #fff;
-      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
     }
-    header, footer {
-      background: rgba(30, 30, 47, 0.9);
-      padding: 20px;
+
+    .booster-box {
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 255, 238, 0.2);
+      padding: 30px;
+      width: 300px;
       text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 10px;
+
+    h1 {
+      font-size: 1.4em;
+      margin-bottom: 20px;
     }
-    section {
-      padding: 60px 20px;
-      max-width: 1000px;
-      margin: auto;
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
     }
-    .card {
-      background: #292944;
-      border-radius: 16px;
-      padding: 20px;
-      margin: 20px 0;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+
+    .boost-label {
+      margin-top: 10px;
+      font-size: 1.2em;
+      color: var(--accent);
     }
-    .horizontal {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: space-around;
-    }
-    .package {
-      flex: 1;
-      min-width: 250px;
-      background: #353558;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    }
-    .floating-btn {
-      position: fixed;
-      right: 16px;
-      bottom: 100px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 999;
-    }
-    .floating-btn img {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-    .scroll-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #ff5a5f;
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 1em;
       border: none;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 50%;
-      font-size: 20px;
+      background: var(--accent);
+      color: black;
+      border-radius: 12px;
       cursor: pointer;
-      z-index: 999;
+    }
+
+    button:hover {
+      background: #00ffe4cc;
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="https://avatars.githubusercontent.com/u/17654035" alt="Yuda Avatar" class="avatar" />
-    <h1>Selamat Datang di Y&Z Studio</h1>
-    <p>Setiap karya adalah cara kami berbicara, untuk ribuan cerita</p>
-  </header>
-
-  <section id="layanan" class="card">
-    <h2>Layanan Kami</h2>
-    <p>Kami menyediakan layanan digital kreatif mulai dari desain, video editing, branding, hingga web development berbasis AI dan human creativity.</p>
-  </section>
-
-  <section id="harga" class="card">
-    <h2>Harga & Paket</h2>
-    <div class="horizontal">
-      <div class="package">
-        <h3>Basic</h3>
-        <p>Rp250.000</p>
-        <ul>
-          <li>1 Halaman</li>
-          <li>1x Revisi</li>
-          <li>Responsif Mobile</li>
-        </ul>
-      </div>
-      <div class="package">
-        <h3>Pro</h3>
-        <p>Rp450.000</p>
-        <ul>
-          <li>3 Halaman</li>
-          <li>2x Revisi</li>
-          <li>Fitur Animasi</li>
-        </ul>
-      </div>
-      <div class="package">
-        <h3>Premium</h3>
-        <p>Rp700.000</p>
-        <ul>
-          <li>5+ Halaman</li>
-          <li>Unlimited Revisi (max 7 hari)</li>
-          <li>Full Custom Fitur</li>
-        </ul>
-      </div>
-    </div>
-    <p><strong>⏳ Waktu Pengerjaan & Pembayaran</strong><br>
-    Estimasi pengerjaan minimal <strong>3 hari kerja</strong> tergantung tingkat kesulitan dan revisi. Pembayaran dilakukan melalui <strong>DANA</strong> ke nomor: <strong>+62 857-2090-6090</strong> (sama dengan WhatsApp). 50% DP di awal, dan 50% setelah final.</p>
-  </section>
-
-  <section id="fitur" class="card">
-    <h2>Fitur Unggulan</h2>
-    <ul>
-      <li>Editable semua konten dari mobile & desktop</li>
-      <li>Admin panel dengan fitur log aktivitas</li>
-      <li>Floating button dan toggle scroll</li>
-      <li>Animasi 3D dan tampilan dynamic</li>
-      <li>Responsive, smooth & ambient visual</li>
-    </ul>
-  </section>
-
-  <section id="testimoni" class="card">
-    <h2>Testimoni</h2>
-    <p>“Desainnya keren banget, bisa diedit sendiri dari HP juga. Top!” – <em>Erna, UMKM Owner</em></p>
-  </section>
-
-  <section id="faq" class="card">
-    <h2>Q&A / FAQ</h2>
-    <p><strong>Tanya:</strong> Bisa revisi sampai berapa kali?<br><strong>Jawab:</strong> Sesuai paket, maksimal 7 hari aktif setelah project selesai.</p>
-  </section>
-
-  <section id="portofolio" class="card">
-    <h2>Portofolio</h2>
-    <p>Berikut adalah contoh karya kami sebelumnya (bisa diedit langsung oleh admin):</p>
-    <p><em>“Kreatif, detail, dan cepat selesai.”</em> – Partner Proyek</p>
-  </section>
-
-  <section id="artikel" class="card">
-    <h2>Artikel</h2>
-    <p>Tips branding, tren desain, dan inspirasi usaha akan kami update secara berkala di sini.</p>
-  </section>
-
-  <section id="form-partner" class="card">
-    <h2>Form Partner</h2>
-    <p>Ingin kolaborasi dengan kami? Kirimkan data dan ide Anda melalui form ini. Admin akan merespons via WhatsApp atau email.</p>
-  </section>
-
-  <footer>
-    <p>Hak Cipta Dilindungi & Powered by AI & Human Creativity</p>
-  </footer>
-
-  <div class="floating-btn">
-    <a href="https://wa.me/6285720906090" target="_blank">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
-    </a>
-    <a href="mailto:yudabastard84@gmail.com">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail">
-    </a>
+  <div class="booster-box">
+    <h1>Volume Booster</h1>
+    <input type="range" id="volumeRange" min="1" max="2.5" step="0.01" value="1.0" />
+    <div class="boost-label">x <span id="boostValue">1.00</span></div>
+    <button onclick="initAudio()">Aktifkan Booster</button>
   </div>
 
-  <button class="scroll-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">↑</button>
+  <script>
+  	  	window.addEventListener("error", e => console.error("❌ Global Error:", e.message));      
+let audioContext;
+let gainNode;
+
+function createVolumePlusPlusFilters(ctx) {
+  const lowPunch = ctx.createBiquadFilter();
+  lowPunch.type = "peaking";
+  lowPunch.frequency.value = 150;
+  lowPunch.Q.value = 0.9;
+  lowPunch.gain.value = 2.8;
+
+  const highDetail = ctx.createBiquadFilter();
+  highDetail.type = "peaking";
+  highDetail.frequency.value = 4500;
+  highDetail.Q.value = 1.5;
+  highDetail.gain.value = 2.5;
+
+  return [lowPunch, highDetail];
+}
+
+function setupAudio() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode = audioContext.createGain();
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const source = audioContext.createMediaStreamSource(stream);
+        const [lowPunch, highDetail] = createVolumePlusPlusFilters(audioContext);
+
+        source.connect(lowPunch);
+        lowPunch.connect(highDetail);
+        highDetail.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Set initial gain
+        gainNode.gain.value = parseFloat(range.value);
+      })
+      .catch(err => alert("Mic error: " + err.message));
+  }
+}
+
+const range = document.getElementById("volumeRange");
+const boostValue = document.getElementById("boostValue");
+
+range.addEventListener("input", () => {
+  boostValue.textContent = range.value;
+
+  if (!audioContext) {
+    setupAudio();
+  } else if (gainNode) {
+    gainNode.gain.value = parseFloat(range.value);
+  }
+});
+
+function initAudio() {
+  setupAudio();
+}
+
+  if ('serviceWorker' in navigator) {      
+    navigator.serviceWorker.register('sw.js')      
+      .then(reg => console.log('✅ Service Worker registered:', reg.scope))      
+      .catch(err => console.error('❌ Service Worker registration failed:', err));      
+  }      
+  
+  
+      console.log("✅ Script Loaded");      
+  </script>
 </body>
 </html>
