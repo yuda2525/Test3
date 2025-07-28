@@ -1,14 +1,13 @@
 {
-  "name": "Volume++ Boost 250%",
-  "short_name": "Volume++",
-  "description": "Peningkat volume hingga 250% dengan kualitas jernih.",
+  "name": "Hybrid Player",
+  "short_name": "Player",
   "lang": "id",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#00ffe4",
-  "theme_color": "#00ffe4",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "icon-192.png",
@@ -22,3 +21,7 @@
     }
   ]
 }
+
+
+
+
