@@ -9,27 +9,44 @@ const assetsToCache = [
   './assets/icon-512.png'
 ];
 
-// Install event: cache semua aset
+// Install
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Langsung aktifkan SW baru
   event.waitUntil(
     caches.open(cacheName).then(cache => cache.addAll(assetsToCache))
   );
 });
 
-// Activate event: hapus cache lama jika ada
+// Activate
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(key => key !== cacheName).map(key => caches.delete(key)))
+      Promise.all(
+        keys.filter(key => key !== cacheName).map(key => caches.delete(key))
+      )
     )
   );
+  self.clients.claim(); // Ambil kendali semua halaman
 });
 
-// Fetch event: ambil dari cache, fallback ke index.html kalau offline
+// Fetch
 self.addEventListener('fetch', event => {
+  const request = event.request;
+
+  // Hanya tangani GET request
+  if (request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request).then(cacheRes =>
-      cacheRes || fetch(event.request).catch(() => caches.match('./index.html'))
-    )
+    caches.match(request).then(cacheRes => {
+      return (
+        cacheRes ||
+        fetch(request).catch(() => {
+          // Jika request HTML dan gagal (offline), fallback ke index.html
+          if (request.headers.get('accept')?.includes('text/html')) {
+            return caches.match('./index.html');
+          }
+        })
+      );
+    })
   );
 });
