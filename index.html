@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-  <!-- ✅ SEO & Social Share -->
+  <!-- âœ… SEO & Social Share -->
   <meta property="og:image" content="assets/icon-512.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://yuda2525.github.io/YOUR-PWA-FOLDER/">
 
-  <!-- ✅ Favicon & Icons -->
+  <!-- âœ… Favicon & Icons -->
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="icon" sizes="512x512" href="assets/icon-512.png">
 
-  <!-- ✅ PWA Essentials -->
+  <!-- âœ… PWA Essentials -->
   <meta name="theme-color" content="#00ffe4" />
   <link rel="manifest" href="manifest.json" />
   <meta name="mobile-web-app-capable" content="yes">
@@ -29,18 +29,12 @@
 
 <!-- Android Theme -->            
 <meta name="mobile-web-app-capable" content="yes" />          
-
   <style>
-    * {  
+  	    * {  
       margin: 0;  
       padding: 0;  
       box-sizing: border-box;  
     }  
-    
-    * {
-    will-change: auto;
-    transform: translateZ(0); /* Reduce GPU overuse */
-  }
 
   video, canvas, img {
     filter: brightness(95%);
@@ -121,6 +115,23 @@ body {
     border-radius: 12px;
     transition: all 0.5s ease;
   }
+  
+  @supports (backdrop-filter: blur(10px)) {
+  .glass {
+    backdrop-filter: blur(10px);
+  }
+}
+  
+  .glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+  border-radius: 15px;
+}
+  
+  .dynamic-light {
+  background: radial-gradient(circle at var(--x) var(--y), rgba(255,255,255,0.1), transparent 80%);
+}
 
     body {
       margin: 0;
@@ -134,166 +145,693 @@ body {
       height: 100vh;
     }
     video, audio {
-      width: 90%;
+      width: 100%;
       max-width: 500px;
-      margin-top: 20px;
-      display: none;
-      border-radius: 16px;
-      box-shadow: 0 0 12px #0ff4;
+      margin: 1rem 0;
+      background: #000;
     }
+    
     .controls {
-      margin-top: 10px;
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      align-items: center;
+      margin-top: 1rem;
     }
-    button {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
+    select, input {
+      font-size: 1rem;
+      padding: 0.4rem;
+      margin: 0.2rem;
     }
-    select {
-      margin-top: 15px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      background: #222;
-      color: white;
-    }
-    input[type="file"] {
-      margin-top: 10px;
-    }
+    
+    .hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#realisticPlayer {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  filter: brightness(1.1) contrast(1.25) saturate(1.15)
+          drop-shadow(0 0 30px rgba(0,255,255,0.1))
+          drop-shadow(0 0 40px rgba(255,255,255,0.05))
+          blur(0.3px);
+  transition: all 1s ease-in-out;
+  background: radial-gradient(circle at center, #111 10%, #000 100%);
+}
+
+
+  #toggleUIPanel {  
+    position: fixed;  
+    top: 15px;  
+    right: 15px;  
+    z-index: 1000;  
+    padding: 8px 14px;  
+    font-size: 16px;  
+    background: rgba(0, 0, 0, 0.6);  
+    color: #fff;  
+    border: none;  
+    border-radius: 8px;  
+    cursor: pointer;  
+  }  
+  
+  .controls-wrapper {  
+    transition: max-height 0.5s ease, opacity 0.5s ease;  
+    overflow: hidden;  
+    background: rgba(255, 255, 255, 0.08);  
+    padding: 10px;  
+    border-radius: 10px;  
+    max-height: 500px;  
+    opacity: 1;  
+  }  
+  
+  .controls-wrapper.hidden {  
+    max-height: 0;  
+    opacity: 0;  
+    padding: 0 10px;  
+  }  
+
 
   </style>
 </head>
 <body>
+  <video id="media" controls></video>
+  <audio id="audio" controls hidden></audio>
 
-  <h2>🎧 Hybrid Player</h2>
+<!-- Tombol toggle -->  
+<button id="toggleUIPanel" onclick="toggleUIPreset()">🎛️ UI Panel</button>  
 
-  <!-- Mode Switch -->
-  <select id="modeSelect">
-    <option value="audio">🎵 Mode Audio (MP3)</option>
-    <option value="video">🎥 Mode Video (MP4)</option>
-  </select>
-
-  <!-- Pemutar Audio & Video -->
-  <audio id="audioPlayer" controls></audio>
-  <video id="videoPlayer" controls muted loop></video>
-
-  <!-- Kontrol Tombol SVG -->
+<!-- Panel Preset dan File Picker -->  
+<div id="uiControls" class="controls-wrapper">  
+  <input type="file" id="fileInput" accept="audio/*,video/*"> 
   <div class="controls">
-    <button id="prevBtn">⏮️</button>
-    <button id="playBtn">▶️</button>
-    <button id="pauseBtn">⏸️</button>
-    <button id="nextBtn">⏭️</button>
+    <label>Preset:
+      <select id="preset">
+      <option value="Flat">Flat</option>  
+      <option value="Bass Boost">Bass</option>  
+      <option value="Treble Boost">Treble</option>  
+      <option value="Rock">Rock</option>  
+      <option value="Pop">Pop</option>  
+      <option value="Jazz">Jazz</option>  
+       <option value="Classic">Classic</option>  
+      <option value="Dance">Dance</option>  
+            <option value="Chill Vibe">Chill Vibe</option>  
+                  <option value="Live Acoustic">Live Acoustic</option>  
+                       <option value="DangdutRemix">DangdutRemix</option>  
+                              <option value="Bright Mix">Bright Mix</option>  
+                                    <option value="Ballad Soft">Ballad Soft</option>  
+                                          <option value="EDM Festival">EDM Festival</option>  
+                                                <option value="R&B">R&B</option>  
+                                                      <option value="Orchestra">Orchestra</option>  
+                                                            <option value="Reggae Vibe">Reggae Vibe</option>  
+                                                                  <option value="Metal Attack">Metal Attack</option>  
+                                                                           <option value="Shape">Shape</option>  
+                                                                            <option value="Podcast Clarity">Podcast Clarity</option>  
+                                                                                  <option value="Surround Deep">Surround Deep</option>  
+                                                                                        <option value="Sub Bass Lift">Sub Bass Lift</option>  
+      <option value="Vocal Airy Bright">Vocal Airy Bright</option>  
+      <option value="Treble Sparkle">Treble Sparkle</option>  
+      <option value="Hi-Fi Wide Range">Hi-Fi Wide</option>  
+        <option value="Warm & Wide">Warm & Wide</option>  
+        <option value="Clarity Focus">Clarity Focus</option>  
+                        <option value="Funky">Funky</option>  
+                                       <option value="Scoopy Smile">Scoopy Smile</option>  
+                                        <option value="AmbientSpace">AmbientSpace</option>  
+                                                <option value="Bassy Theater">Bassy Theater</option>  
+                                                        <option value="Bright Vocal">Bright Vocal</option>  
+                                                                <option value="StudioPro">StudioPro</option>  
+                                                                        <option value="Funky Shape">Funky Shape</option>  
+                                                                                <option value="AmbientNature">AmbientNature</option>  
+                                                                                        <option value="Clean Dialog">Clean Dialog</option>  
+                                                                           <option value="CinematicWide">CinematicWide</option>  
+                                                                                     <option value="Gaming FPS Focus">Gaming FPS Focus</option>  
+                                                                                         <option value="Vortex Mode">Vortex Mode</option>  
+                                                                                                  <option value="Punchy">Punchy</option>  
+                                                                                                 <option value="Boom Room">Boom Room</option>  
+                                                                                                    <option value="MidCut">MidCut</option>  
+                                                                                                         <option value="Hardcore Punch">Hardcore Punch</option>  
+                                                                                                               <option value="Movie">Movie</option>  
+                                                                                                                          <option value="ClubNight">ClubNight</option>  
+                                                                                                                               <option value="Dolby Atmos Style">Dolby Atmos Style</option>  
+                                                                                                                       <option value="LoFi Mode">LoFi Mode</option>  
+    </select>  
+    </label>
   </div>
-
-  <!-- Input Pilih File -->
-  <input type="file" id="filePicker" accept="audio/*,video/*" multiple />
-  
-  
-  
 <div class="retina-glass">
 	<div id="visualMode" class="content-overlay visual-mode-all">
 		
-  <video autoplay muted loop playsinline id="bgVideo">
+<body>  
+<script type="module" src="main.js"></script>
+<script>
+window.addEventListener("error", e => console.error("❌ Global Error:", e.message));
+  
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const mediaEl = document.getElementById('media');
+    const audioEl = document.getElementById('audio');
+    const fileInput = document.getElementById('fileInput');
+    const presetSelect = document.getElementById('preset');
 
-<button id="installBtn" style="display: none;">Install App</button>
-  <script>
-    const modeSelect = document.getElementById("modeSelect");
-    const audioPlayer = document.getElementById("audioPlayer");
-    const videoPlayer = document.getElementById("videoPlayer");
-    const filePicker = document.getElementById("filePicker");
 
-    const playBtn = document.getElementById("playBtn");
-    const pauseBtn = document.getElementById("pauseBtn");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
+    let sourceNode, eqNodes = [], compressor, gainNode;
 
-    let files = [];
-    let currentIndex = 0;
-    let mode = "audio";
+    const eqPresets = {
+  "Flat":  {
+    eq: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    enhancer: { presence: 0, brilliance: 0, warmth: 0 },
+    compressor: { threshold: -12, ratio: 2, attack: 0.003, release: 0.25 },
+    limiter: { threshold: -3, ratio: 10, attack: 0.002, release: 0.1 },
+    stereoWidth: 1,
+    reverb: 0
+  },
+  "Bass Boost":  {
+    eq: [5, 4, 3, 1, 0, -1, -2, -2, -3, -3, -4, -5],
+    enhancer: { presence: 0.2, brilliance: 0.1, warmth: 0.5 },
+    compressor: { threshold: -10, ratio: 3, attack: 0.004, release: 0.3 },
+    limiter: { threshold: -2, ratio: 8, attack: 0.003, release: 0.2 },
+    stereoWidth: 1.1,
+    reverb: 0.1
+  },
+  "Treble Boost": {
+    eq: [-3, -2, -2, -1, 0, 1, 2, 3, 4, 5, 5, 6],
+    enhancer: { presence: 0.3, brilliance: 0.6, warmth: 0.1 },
+    compressor: { threshold: -11, ratio: 2.8, attack: 0.0025, release: 0.22 },
+    limiter: { threshold: -2.5, ratio: 9, attack: 0.002, release: 0.1 },
+    stereoWidth: 1.05,
+    reverb: 0.05
+  },
+"Rock": {
+  eq: [4.2, 4.0, 3.6, 2.2, 0.3, -1.0, 1.0, 2.6, 3.9, 4.5, 4.2, 3.2],
+  enhancer: { presence: 0.85, brilliance: 0.55, warmth: 0.5 },
+  compressor: { threshold: -11, ratio: 4.0, attack: 4, release: 68 },
+  limiter: { threshold: -3.5, ratio: 10.5, attack: 0.003, release: 0.11 },
+  stereoWidth: 1.3,
+  reverb: 0.21
+},
+"Pop": {
+  eq: [2.5, 2.2, 1.8, 0.8, 0, -0.8, 0.2, 1.2, 2.0, 2.5, 2.2, 1.8],
+  enhancer:   { presence: 0.5, brilliance: 0.3, warmth: 0.6 },
+  compressor: { threshold: -15, ratio: 2.8, attack: 5, release: 70 },
+  limiter:    { threshold: -6,  ratio: 7, attack: 0.005, release: 0.17 },
+  stereoWidth: 1.0,
+  reverb: 0.22
+},
+"Jazz": {
+  eq: [1.5, 1.2, 1, 0.5, 0.2, 0, 0.3, 0.5, 1, 1.3, 1.1, 1],
+  enhancer: { presence: 0.4, brilliance: 0.2, warmth: 0.5 },
+  compressor: { threshold: -18, ratio: 2, attack: 12, release: 120 },
+  limiter:    { threshold: -7, ratio: 4, attack: 0.008, release: 0.3 },
+  stereoWidth: 1.0,
+  reverb: 0.15
+},
+"Classic": {
+  eq: [1.2, 1, 0.8, 0.5, 0, -0.5, -0.8, 0.3, 0.6, 1.1, 1, 0.8],
+  enhancer: {
+    presence: 0.15,
+    brilliance: 0.2,
+    warmth: 0.7
+  },
+  compressor: {
+    threshold: -18,
+    ratio: 2.2,
+    attack: 15,
+    release: 180
+  },
+  limiter: {
+    threshold: -8,
+    ratio: 4,
+    attack: 0.005,
+    release: 0.35
+  },
+  stereoWidth: 0.95,   // Sedikit lebih sempit biar fokus ke tengah
+  reverb: 0.6           // Lebih besar, biar ambience ruangan terasa
+},
+"Dance":  {
+  eq: [4.5, 3.5, 2.5, 1.5, 0, -1, 0.5, 1.5, 3, 4, 3.5, 2.5],
+  enhancer: {
+    presence: 0.7,
+    brilliance: 0.5,
+    warmth: 0.6
+  },
+  compressor: {
+    threshold: -11,
+    ratio: 3.5,
+    attack: 4,
+    release: 80
+  },
+  limiter: {
+    threshold: -5,
+    ratio: 9,
+    attack: 0.004,
+    release: 0.15
+  },
+  stereoWidth: 1.15,
+  reverb: 0.08
+},
+"Chill Vibe": {
+  eq: [2.8, 2.4, 2, 1.5, 0.2, -0.7, 0.3, 1.2, 2, 2.5, 2.2, 1.8],
+  enhancer:   { presence: 0.5, brilliance: 0.3, warmth: 0.6 },
+  compressor: { threshold: -13, ratio: 2.7, attack: 5, release: 70 },
+  limiter:    { threshold: -6, ratio: 7, attack: 0.004, release: 0.18 },
+  stereoWidth: 1.1,
+  reverb: 0.25
+},
+"Live Acoustic": {
+  eq: [2.5, 2.2, 1.8, 1, 0, -1.2, -0.5, 0.5, 1.2, 2.2, 2.8, 2.5],
+  enhancer: { presence: 0.5, brilliance: 0.3, warmth: 0.7 },
+  compressor: { threshold: -13, ratio: 2.8, attack: 4, release: 55 },
+  limiter: { threshold: -5, ratio: 6.5, attack: 0.004, release: 0.1 },
+  stereoWidth: 1.05,
+  reverb: 0.22
+},
+"DangdutRemix": {  
+  eq: [4.5, 4.2, 3.5, 2.5, 0.8, -1, 0.8, 2.2, 3.2, 3.8, 3.5, 2.9],  
+  enhancer: { presence: 0.8, brilliance: 0.6, warmth: 0.9 },  
+  compressor: { threshold: -10, ratio: 3.8, attack: 3, release: 55 },  
+  limiter:    { threshold: -3.5, ratio: 9, attack: 0.003, release: 0.12 },  
+  stereoWidth: 1.3,  
+  reverb: 0.15  
+},
+"Bright Mix": {  
+  eq: [2.8, 2.5, 2, 1.2, 0.5, 0, 0.5, 1.5, 2.8, 3, 2.8, 2.4],  
+  enhancer:   { presence: 0.7, brilliance: 0.8, warmth: 0.3 },  
+  compressor: { threshold: -14, ratio: 2.5, attack: 3.5, release: 80 },  
+  limiter:    { threshold: -4, ratio: 7, attack: 0.004, release: 0.18 },  
+  stereoWidth: 1.25,  
+  reverb: 0.09  
+},  
+"Ballad Soft": {
+  "eq": [1.5, 1.2, 0.8, 0.3, -0.5, -1, -0.3, 0.5, 1, 1.8, 2, 2.2],
+  "enhancer": { "presence": 0.4, "brilliance": 0.2, "warmth": 0.6 },
+  "compressor": { "threshold": -14, "ratio": 2.5, "attack": 10, "release": 120 },
+  "limiter": { "threshold": -7, "ratio": 5, "attack": 0.005, "release": 0.25 },
+  "stereoWidth": 1.05,
+  "reverb": 0.18
+},
+"EDM Festival": {
+  eq: [6.5, 5.5, 4.5, 2.5, 0.8, -2, 0, 3, 5.5, 6, 5.2, 4.5],
+  enhancer: {
+    presence: 1.0,
+    brilliance: 0.8,
+    warmth: 0.5
+  },
+  compressor: {
+    threshold: -6,
+    ratio: 6,
+    attack: 3,
+    release: 60
+  },
+  limiter: {
+    threshold: -2.5,
+    ratio: 10,
+    attack: 0.001,
+    release: 0.1
+  },
+  stereoWidth: 1.4,
+  reverb: 0.12
+},
+  "R&B":  {
+  eq: [3.2, 2.8, 2.4, 1.6, 0.2, -0.6, 0.4, 1.8, 2.6, 3.2, 3.4, 3],
+  enhancer:   { presence: 0.85, brilliance: 0.65, warmth: 0.7 },
+  compressor: { threshold: -11, ratio: 3.2, attack: 4.5, release: 58 },
+  limiter:    { threshold: -3.8, ratio: 8.5, attack: 0.003, release: 0.12 },
+  stereoWidth: 1.35,
+  reverb: 0.14
+},
+"Orchestra": {
+  eq: [2.5, 2, 1.5, 1, 0, -0.5, 0.3, 1.2, 2, 2.8, 3, 2.2],
+  enhancer:   { presence: 0.5, brilliance: 0.4, warmth: 0.6 },
+  compressor: { threshold: -16, ratio: 2.5, attack: 6, release: 90 },
+  limiter:    { threshold: -6, ratio: 6.5, attack: 0.005, release: 0.25 },
+  stereoWidth: 1.05,
+  reverb: 0.3
+},
+  "Reggae Vibe": {
+    eq: [3, 2.8, 2.2, 1.2, 0, -1, 0.6, 1.5, 2.8, 3.5, 3.2, 2.5],
+    enhancer:   { presence: 0.6, brilliance: 0.3, warmth: 0.7 },
+    compressor: { threshold: -14, ratio: 3, attack: 4, release: 60 },
+    limiter:    { threshold: -5, ratio: 7, attack: 0.004, release: 0.2 },
+    stereoWidth: 1.1,
+    reverb: 0.17
+  },
+  "Metal Attack": {
+    eq: [5.5, 5, 4.2, 2.5, 0, -2, 1.8, 3.2, 4.5, 5.2, 5, 4],
+    enhancer:   { presence: 1, brilliance: 0.6, warmth: 0.3 },
+    compressor: { threshold: -9, ratio: 4.5, attack: 2, release: 50 },
+    limiter:    { threshold: -3, ratio: 10, attack: 0.003, release: 0.15 },
+    stereoWidth: 1.15,
+    reverb: 0.12
+  },
+"Shape": {  
+  eq: [2.5, 2, 1.5, 0.5, 0, -1, -0.5, 0.2, 1.2, 2, 2.5, 2.2],  
+  enhancer:   { presence: 0.6, brilliance: 0.4, warmth: 0.7 },  
+  compressor: { threshold: -12, ratio: 3.3, attack: 6, release: 70 },  
+  limiter:    { threshold: -4.5, ratio: 8.8, attack: 0.004, release: 0.14 },  
+  stereoWidth: 1.1,  
+  reverb: 0.1  
+},  
+  "Podcast Clarity": {
+    eq: [1.5, 1.2, 1, 0.5, 0, -0.2, 0.3, 0.8, 1.2, 1.5, 1.2, 1],
+    enhancer:   { presence: 0.7, brilliance: 0.6, warmth: 0.2 },
+    compressor: { threshold: -18, ratio: 2.2, attack: 4, release: 85 },
+    limiter:    { threshold: -4, ratio: 8, attack: 0.004, release: 0.18 },
+    stereoWidth: 1,
+    reverb: 0.05
+  },
+  "Surround Deep": {
+  eq: [2, 1.8, 1.5, 1, -1.2, -1.5, -1.2, 0.5, 2.5, 3, 2.8, 2.2],
+  enhancer: { presence: 0.5, brilliance: 0.4, warmth: 0.6 },
+  compressor: { threshold: -13, ratio: 3.5, attack: 4, release: 65 },
+  limiter: { threshold: -5.5, ratio: 9, attack: 0.004, release: 0.12 },
+  stereoWidth: 1.8,
+  reverb: 0.4,
+  reflections: { delayL: 11, delayR: 17, feedback: 0.2, wet: 0.25 },
+  crossfeed: 0.22
+  },
+"Sub Bass Lift": {
+  eq: [5, 4.5, 3.8, 2.2, 0.5, -1, -1.5, -2, -1.2, -0.5, 0.2, 1],
+  enhancer:   { presence: 0.4, brilliance: 0.2, warmth: 0.6 },
+  compressor: { threshold: -12, ratio: 3.8, attack: 3, release: 60 },
+  limiter:    { threshold: -5, ratio: 7.5, attack: 0.003, release: 0.12 },
+  stereoWidth: 1.05,
+  reverb: 0.1
+},
+"Vocal Airy Bright": {
+  "eq": [0, 0.5, 1, 1.8, 2.4, 3.2, 3.5, 3, 2, 1, 0.5, 0],
+  "enhancer": { "presence": 0.9, "brilliance": 0.85, "warmth": 0.2 },
+  "compressor": { "threshold": -18, "ratio": 2.8, "attack": 3, "release": 60 },
+  "limiter": { "threshold": -5.5, "ratio": 7, "attack": 0.003, "release": 0.18 },
+  "stereoWidth": 1.15,
+  "reverb": 0.12
+},
+"Treble Sparkle": {
+  eq: [-2, -1.5, -1, 0, 0.5, 1, 2.5, 3.5, 4.2, 4.5, 4.2, 3.8],
+  enhancer:   { presence: 0.6, brilliance: 0.85, warmth: 0.2 },
+  compressor: { threshold: -14, ratio: 2.8, attack: 3, release: 65 },
+  limiter:    { threshold: -5, ratio: 7, attack: 0.0035, release: 0.15 },
+  stereoWidth: 1.15,
+  reverb: 0.1
+},
+"Hi-Fi Wide Range": {
+  eq: [3, 2.8, 2.5, 2, 1.5, 0, -0.2, 1, 2, 2.8, 3.2, 3.5],
+  enhancer:   { presence: 0.75, brilliance: 0.65, warmth: 0.5 },
+  compressor: { threshold: -13, ratio: 3, attack: 3.5, release: 80 },
+  limiter:    { threshold: -4.5, ratio: 8.5, attack: 0.003, release: 0.18 },
+  stereoWidth: 1.25,
+  reverb: 0.14
+},
+"Warm & Wide": {
+  eq: [2.5, 2.2, 1.8, 1.5, 1, 0, 0.5, 1.2, 2.5, 2.8, 2.5, 2],
+  enhancer:   { presence: 0.5, brilliance: 0.4, warmth: 0.85 },
+  compressor: { threshold: -15, ratio: 2.6, attack: 4.5, release: 85 },
+  limiter:    { threshold: -5.5, ratio: 7.5, attack: 0.004, release: 0.2 },
+  stereoWidth: 1.3,
+  reverb: 0.2
+},
+"Clarity Focus": {
+  eq: [1.8, 1.5, 1.2, 0.8, 0, -0.3, 0.4, 0.9, 1.5, 2.2, 2, 1.6],
+  enhancer:   { presence: 0.8, brilliance: 0.6, warmth: 0.3 },
+  compressor: { threshold: -17, ratio: 2.5, attack: 4, release: 90 },
+  limiter:    { threshold: -5, ratio: 7.5, attack: 0.003, release: 0.15 },
+  stereoWidth: 1.2,
+  reverb: 0.08
+},
+"Funky": {
+  eq: [3.8, 3, 2.2, 1.2, 0, -0.8, 0.3, 1.5, 2.5, 3, 3.2, 2.5],
+  enhancer:   { presence: 0.7, brilliance: 0.6, warmth: 0.7 },
+  compressor: { threshold: -9.5, ratio: 3.5, attack: 4, release: 68 },
+  limiter:    { threshold: -3.5, ratio: 9, attack: 0.003, release: 0.12 },
+  stereoWidth: 1.2,
+  reverb: 0.16
+},
+"Scoopy Smile": {
+  eq: [5.5, 4.2, 2, -2.8, -4.5, -6, -4, -1.5, 1.5, 3.5, 4.8, 5.5],
+  enhancer: { presence: 0.4, brilliance: 0.7, warmth: 0.3 },
+  compressor: { threshold: -16, ratio: 3.2, attack: 5, release: 75 },
+  stereoWidth: 1.4
+},
+"AmbientSpace": {
+  eq: [1.2, 0.8, 0.4, 0, -0.2, -0.6, 0.3, 1.5, 2.4, 3.0, 3.5, 3.0],
+  enhancer:   { presence: 0.4, brilliance: 0.6, warmth: 0.2 },
+  compressor: { threshold: -18, ratio: 2.0, attack: 4, release: 100 },
+  limiter:    { threshold: -6, ratio: 7.0, attack: 0.005, release: 0.3 },
+  stereoWidth: 1.6,
+  reverb: 0.35
+},
+"Bassy Theater": {
+  eq: [3.5, 3.2, 3, 2.5, 1.5, 0.5, -0.5, -1, -1.2, -0.8, -0.5, 0],
+  enhancer:   { presence: 0.4, brilliance: 0.2, warmth: 0.7 },
+  compressor: { threshold: -12, ratio: 3.2, attack: 6, release: 100 },
+  limiter:    { threshold: -4, ratio: 8, attack: 0.0035, release: 0.25 },
+  stereoWidth: 1.1,
+  reverb: 0.18
+},
+"Bright Vocal": {
+  eq: [3, 2.8, 2.2, 1.5, 0, -0.5, 0.5, 2.5, 3.2, 3.8, 4.2, 4.5],
+  enhancer:   { presence: 0.9, brilliance: 0.7, warmth: 0.3 },
+  compressor: { threshold: -12, ratio: 3, attack: 5, release: 55 },
+  limiter:    { threshold: -5, ratio: 8, attack: 0.003, release: 0.16 },
+  stereoWidth: 1.15,
+  reverb: 0.18
+},
+  "StudioPro": {  
+  eq: [1.5, 1.2, 1, 0.5, 0, 0, 0.5, 1.2, 2.5, 3.2, 3.5, 3.8],  
+  enhancer:   { presence: 0.6, brilliance: 0.55, warmth: 0.6 },  
+  compressor: { threshold: -13.5, ratio: 3, attack: 3, release: 75 },  
+  limiter:    { threshold: -5.2, ratio: 7.5, attack: 0.004, release: 0.2 },  
+  stereoWidth: 1.4,  
+  reverb: 0.2  
+},  
+"Funky Shape": {
+  eq: [3.5, 3, 2.5, 0.5, -1, -2.5, -1, 0.8, 2.2, 3.2, 3.5, 2.8],
+  enhancer: { presence: 0.6, brilliance: 0.4, warmth: 0.6 },
+  compressor: { threshold: -11, ratio: 3.3, attack: 4, release: 60 },
+  limiter: { threshold: -4, ratio: 8.5, attack: 0.004, release: 0.16 },
+  stereoWidth: 1.1,
+  reverb: 0.1
+},
+"AmbientNature": {
+  eq: [0.5, 0.3, 0, -0.2, -0.4, -0.5, 0.1, 0.7, 1.2, 1.8, 2.0, 1.5],
+  enhancer:   { presence: 0.5, brilliance: 0.5, warmth: 0.6 },
+  compressor: { threshold: -20, ratio: 1.8, attack: 3, release: 120 },
+  limiter:    { threshold: -7, ratio: 6.0, attack: 0.006, release: 0.25 },
+  stereoWidth: 1.5,
+  reverb: 0.28
+},
+"Clean Dialog": {
+  eq: [1.2, 1, 0.8, 0.5, 0.2, 0, 0.1, 0.8, 1.2, 1.5, 1.7, 1.5],
+  enhancer:   { presence: 0.8, brilliance: 0.5, warmth: 0.3 },
+  compressor: { threshold: -16, ratio: 2.3, attack: 3.8, release: 85 },
+  limiter:    { threshold: -4.5, ratio: 7.2, attack: 0.004, release: 0.18 },
+  stereoWidth: 1,
+  reverb: 0.05
+},
+  "CinematicWide": {  
+  eq: [2.5, 2.2, 1.8, 1.2, 0.5, 0, 0.8, 1.6, 3.2, 3.8, 4, 4.3],  
+  enhancer:   { presence: 0.65, brilliance: 0.6, warmth: 0.75 },  
+  compressor: { threshold: -12.5, ratio: 3.2, attack: 2.5, release: 90 },  
+  limiter:    { threshold: -4.5, ratio: 7.8, attack: 0.004, release: 0.22 },  
+  stereoWidth: 1.55,  
+  reverb: 0.32  
+},  
+"Gaming FPS Focus": {
+  eq: [2.5, 2.2, 1.8, 1, 0.5, 0, -0.2, 0.5, 1.5, 2.8, 3, 2.6],
+  enhancer:   { presence: 0.9, brilliance: 0.6, warmth: 0.3 },
+  compressor: { threshold: -11.5, ratio: 3, attack: 2.5, release: 65 },
+  limiter:    { threshold: -4, ratio: 9, attack: 0.0035, release: 0.17 },
+  stereoWidth: 1.35,
+  reverb: 0.1
+},
+"Vortex Mode": {
+  eq: [0, -2, 2.5, -1.5, 3, -3.5, 2.5, -2, 3, -2, 2.5, -1],
+  enhancer: { presence: 0.6, brilliance: 0.6, warmth: 0.6 },
+  compressor: { threshold: -13, ratio: 3, attack: 7, release: 65 },
+  stereoWidth: 1.5,
+  reverb: 0.2
+},
+"Punchy": {
+  eq: [4, 3.5, 2.8, 1.5, 0.5, -0.5, 0.2, 1.5, 2.8, 3.2, 3.5, 3],
+  enhancer:   { presence: 0.85, brilliance: 0.5, warmth: 0.5 },
+  compressor: { threshold: -10, ratio: 4, attack: 3, release: 60 },
+  limiter:    { threshold: -2.5, ratio: 10.5, attack: 0.003, release: 0.11 },
+  stereoWidth: 1.2,
+  reverb: 0.09
+},
+"Boom Room": {  
+  eq: [3.5, 3, 2.5, 1.5, 0.5, -0.2, 0.4, 1, 1.8, 2.5, 3, 3.2],  
+  enhancer:   { presence: 0.5, brilliance: 0.3, warmth: 0.75 },  
+  compressor: { threshold: -13, ratio: 3.2, attack: 3, release: 75 },  
+  limiter:    { threshold: -3.8, ratio: 8, attack: 0.0035, release: 0.17 },  
+  stereoWidth: 1.1,  
+  reverb: 0.18  
+},  
+"MidCut": {
+  eq: [2, 2, 2.5, -1.5, -3.5, -4.5, -3.5, -1.5, 2, 3.2, 3.5, 3],
+  enhancer:   { presence: 0.5, brilliance: 0.5, warmth: 0.4 },
+  compressor: { threshold: -10, ratio: 2.8, attack: 5, release: 65 },
+  limiter:    { threshold: -3.5, ratio: 8, attack: 0.003, release: 0.12 },
+  stereoWidth: 1.3,
+  reverb: 0.08
+},
+"Hardcore Punch": {  
+  eq: [3.2, 2.8, 2.5, 1.8, 1, 0, -0.5, 0.2, 1.2, 2.5, 2.8, 2.2],  
+  enhancer:   { presence: 0.8, brilliance: 0.5, warmth: 0.6 },  
+  compressor: { threshold: -10, ratio: 3.8, attack: 3, release: 65 },  
+  limiter:    { threshold: -3.5, ratio: 9, attack: 0.003, release: 0.15 },  
+  stereoWidth: 1.2,  
+  reverb: 0.07  
+},  
+   "Movie": {
+  eq: [2.2, 2, 1.8, 1.2, 0.5, 0, 0.5, 1.5, 2.8, 3.2, 3.4, 3.5],
+  enhancer:   { presence: 0.5, brilliance: 0.4, warmth: 0.7 },
+  compressor: { threshold: -14, ratio: 2.8, attack: 3.5, release: 85 },
+  limiter:    { threshold: -5, ratio: 7, attack: 0.004, release: 0.19 },
+  stereoWidth: 1.4,
+  reverb: 0.2
+},
+  "ClubNight": {  
+  eq: [4, 3.5, 3, 2, 1, 0, -1, 0.5, 2, 3.5, 4, 4.2],  
+  enhancer:   { presence: 0.85, brilliance: 0.7, warmth: 0.65 },  
+  compressor: { threshold: -10, ratio: 4.2, attack: 2.8, release: 70 },  
+  limiter:    { threshold: -3, ratio: 9, attack: 0.002, release: 0.16 },  
+  stereoWidth: 1.5,  
+  reverb: 0.3  
+},  
+  "Dolby Atmos Style": {  
+  eq: [2.8, 2.5, 2.2, 1.5, 1, 0, 0.5, 1.2, 2.5, 3, 3.5, 3.8],  
+  enhancer:   { presence: 0.7, brilliance: 0.6, warmth: 0.75 },  
+  compressor: { threshold: -12, ratio: 3.5, attack: 2.5, release: 80 },  
+  limiter:    { threshold: -4, ratio: 8, attack: 0.003, release: 0.18 },  
+  stereoWidth: 1.5,  
+  reverb: 0.25  
+},  
+"LoFi Mode": {
+  eq: [1.5, 0.8, 0.2, -0.5, -1.5, -2.5, -2, -1.2, -0.5, 0.5, 1, 1.5],
+  enhancer: {
+    presence: 0.3,
+    brilliance: 0.2,
+    warmth: 0.7
+  },
+  compressor: {
+    threshold: -16,
+    ratio: 2.5,
+    attack: 10,
+    release: 120
+  },
+  limiter: {
+    threshold: -6,
+    ratio: 6,
+    attack: 0.005,
+    release: 0.2
+  },
+  stereoWidth: 0.9,
+  reverb: 0.25
+},
+};
 
-    // Ganti mode audio/video
-    modeSelect.addEventListener("change", () => {
-      mode = modeSelect.value;
-      audioPlayer.style.display = mode === "audio" ? "block" : "none";
-      videoPlayer.style.display = mode === "video" ? "block" : "none";
-      loadCurrent();
-    });
+    
 
-    filePicker.addEventListener("change", (e) => {
-      files = Array.from(e.target.files);
-      currentIndex = 0;
-      loadCurrent();
-    });
+    function applyPreset(presetName) {
+      const preset = eqPresets[presetName];
+      eqNodes.forEach((node, i) => {
+        node.gain.value = preset.eq[i] || 0;
+      });
 
-    function loadCurrent() {
-      const file = files[currentIndex];
+      compressor.threshold.value = preset.compressor.threshold;
+      compressor.ratio.value = preset.compressor.ratio;
+      compressor.attack.value = preset.compressor.attack;
+      compressor.release.value = preset.compressor.release;
+    }
+
+    function setupAudioPipeline(element) {
+      if (sourceNode) sourceNode.disconnect();
+      eqNodes.forEach(n => n.disconnect());
+      if (compressor) compressor.disconnect();
+      if (gainNode) gainNode.disconnect();
+
+      sourceNode = audioCtx.createMediaElementSource(element);
+
+      // Create EQ filters (12 band peaking filters)
+      eqNodes = Array.from({ length: 12 }, (_, i) => {
+        const f = audioCtx.createBiquadFilter();
+        f.type = "peaking";
+        f.frequency.value = 32 * Math.pow(2, i); // log scale
+        f.Q.value = 1.2;
+        f.gain.value = 0;
+        return f;
+      });
+
+      compressor = audioCtx.createDynamicsCompressor();
+      gainNode = audioCtx.createGain();
+
+      // Connect chain
+      sourceNode.connect(eqNodes[0]);
+      for (let i = 0; i < eqNodes.length - 1; i++) {
+        eqNodes[i].connect(eqNodes[i + 1]);
+      }
+      eqNodes.at(-1).connect(compressor);
+      compressor.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      applyPreset(presetSelect.value);
+    }
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
       if (!file) return;
 
       const url = URL.createObjectURL(file);
+      const isVideo = file.type.startsWith("video");
 
-      if (mode === "audio" && file.type.startsWith("audio")) {
-        audioPlayer.src = url;
-        audioPlayer.play();
-        audioPlayer.style.display = "block";
-        videoPlayer.style.display = "none";
-      } else if (mode === "video" && file.type.startsWith("video")) {
-        videoPlayer.src = url;
-        videoPlayer.play();
-        videoPlayer.style.display = "block";
-        audioPlayer.style.display = "none";
+      if (isVideo) {
+        mediaEl.src = url;
+        mediaEl.hidden = false;
+        audioEl.hidden = true;
+        setupAudioPipeline(mediaEl);
+      } else {
+        audioEl.src = url;
+        audioEl.hidden = false;
+        mediaEl.hidden = true;
+        setupAudioPipeline(audioEl);
       }
-    }
-
-    playBtn.addEventListener("click", () => {
-      if (mode === "audio") audioPlayer.play();
-      else videoPlayer.play();
     });
 
-    pauseBtn.addEventListener("click", () => {
-      if (mode === "audio") audioPlayer.pause();
-      else videoPlayer.pause();
-    });
-
-    prevBtn.addEventListener("click", () => {
-      currentIndex = (currentIndex - 1 + files.length) % files.length;
-      loadCurrent();
-    });
-
-    nextBtn.addEventListener("click", () => {
-      currentIndex = (currentIndex + 1) % files.length;
-      loadCurrent();
+    presetSelect.addEventListener("change", () => {
+      applyPreset(presetSelect.value);
     });
     
     
+    let running = false;
+let rafId;
+
+function loop60fps() {
+  if (!running) return;
+  rafId = requestAnimationFrame(loop60fps);
+}
+
+function startLoop() {
+  if (!running) {
+    running = true;
+    console.log("60FPS Loop: ✅ ON");
+    loop60fps();
+  }
+}
+
+function stopLoop() {
+  if (running) {
+    running = false;
+    cancelAnimationFrame(rafId);
+    console.log("60FPS Loop: ⛔ OFF");
+  }
+}
+
+// Expose buat bisa dipanggil di console
+window.startLoop = startLoop;
+window.stopLoop = stopLoop;
+
+// Auto start kalau mau
+startLoop();
+
+
     
-  let deferredPrompt;
-  const installBtn = document.getElementById('installBtn');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'block';
-
-    installBtn.addEventListener('click', () => {
-      installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
-        } else {
-          console.log('User dismissed the A2HS prompt');
-        }
-        deferredPrompt = null;
-      });
-    });
-  });
-
-
-  window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById("visualMode");
 
   if (!el) {
@@ -301,28 +839,154 @@ body {
     return;
   }
 
-  console.log("🔵 Mode visual aktif!");
+  console.log("🔌 Mode visual aktif!");
 
-  // Tes tambahkan class manual satu-satu
   el.classList.add("dolby-vision");
   el.classList.remove("bravia-cinematic");
   el.classList.toggle("huawei-vivid");
-
-  // Gabungan semuanya?
   el.classList.add("visual-mode-all");
 });
 
+
+const visualEngineSettings = {
+  postProcess: {
+    exposure: {
+      minBrightness: 0.8,
+      maxBrightness: 1.2,
+      autoAdjust: true,
+      speed: 0.15
+    },
+    contrast: 1.15,
+    saturation: 1.1,
+    bloom: {
+      enabled: true,
+      intensity: 0.3,
+      threshold: 1.1
+    },
+    vignette: {
+      enabled: true,
+      intensity: 0.15,
+      smoothness: 0.6
+    },
+    chromaticAberration: {
+      enabled: true,
+      intensity: 0.02
+    },
+    motionBlur: {
+      enabled: true,
+      shutterAngle: 90
+    },
+    colorGrading: {
+      lift: [1.0, 1.0, 1.0],
+      gamma: [1.05, 1.05, 1.05],
+      gain: [1.1, 1.1, 1.1]
+    },
+    lensFlare: {
+      enabled: true,
+      intensity: 0.2
+    },
+    ambientOcclusion: {
+      enabled: true,
+      radius: 0.5,
+      intensity: 0.6
+    },
+    depthOfField: {
+      enabled: true,
+      focalDistance: 3.0,
+      aperture: 2.8,
+      blurAmount: 0.5
+    }
+  },
+  skybox: {
+    type: "gradient",
+    topColor: "#1c1c2a",
+    bottomColor: "#5c6c80"
+  },
+  lighting: {
+    direction: [0.5, -1, 0.3],
+    intensity: 1.0,
+    color: "#ffffff",
+    shadows: true
+  },
+  autoControl: {
+    autoplay: true,
+    loop: true,
+    muted: false,
+    volume: 1.0,
+    controlsVisible: false
+  }
+};
+
+let lastTap = 0;
+const videoPlayer = document.getElementById('realisticPlayer');
+
+videoPlayer.addEventListener('touchend', () => {
+  const now = new Date().getTime();
+  if (now - lastTap < 300) {
+    toggleUIPreset(); // panggil fungsi lama
+  }
+  lastTap = now;
+});
+
+videoPlayer.addEventListener('click', () => {
+  const now = new Date().getTime();
+  if (now - lastTap < 300) {
+    toggleUIPreset(); // panggil fungsi lama juga untuk desktop
+  }
+  lastTap = now;
+});
+
+const dropdown = document.getElementById('dropdownPanel');
+videoPlayer.addEventListener('play', () => {
+  if (dropdown) {
+    dropdown.style.display = 'none';
+  }
+});
+
+function toggleUIPreset() {
+  const dropdown = document.getElementById('dropdownPanel');
+  if (dropdown) {
+    dropdown.style.display = (dropdown.style.display === 'none' || dropdown.style.display === '') ? 'block' : 'none';
+  }
+}
+
+  function toggleUIPreset() {  
+    const panel = document.getElementById('uiControls');  
+    const btn = document.getElementById('toggleUIPanel');  
+    const isHidden = panel.classList.toggle('hidden');  
+  
+    btn.textContent = isHidden ? '🔽 Show UI' : '🎛️ UI Panel';  
+  }  
+  
+  // Optional: start with UI hidden  
+  // document.getElementById('uiControls').classList.add('hidden');  
+
+
+
+
+let lastTime = performance.now();
+let frames = 0;
+
+function checkFPS() {
+  const now = performance.now();
+  frames++;
+  if (now - lastTime >= 1000) {
+    console.log("FPS:", frames);
+    frames = 0;
+    lastTime = now;
+  }
+  requestAnimationFrame(checkFPS);
+}
+
+checkFPS();
 
   if ('serviceWorker' in navigator) {    
     navigator.serviceWorker.register('sw.js')    
       .then(reg => console.log('✅ Service Worker registered:', reg.scope))    
       .catch(err => console.error('❌ Service Worker registration failed:', err));    
   }    
-
-      console.log("✅ Script Loaded");      
+  
+  console.log("✅ Script Loaded");  
   </script>
 </body>
 </html>
-
-
-
