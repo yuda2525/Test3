@@ -31,6 +31,84 @@
 <meta name="mobile-web-app-capable" content="yes" />          
 
   <style>
+  	:root {
+  --color-primary: rgba(0, 255, 238, 0.08);       /* soft glass base */
+  --color-accent: #ff4de8;
+  --color-background: linear-gradient(120deg, #0e0e0e, #1a1a1a);
+  --shadow-depth: 0 10px 32px rgba(0, 255, 255, 0.15);
+  --glow-effect: 0 0 12px rgba(0, 255, 238, 0.6);
+
+  --glass-blur: blur(18px);
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --color-glow: rgba(0, 255, 238, 0.25);
+}
+
+body {
+  background-image: var(--color-background), url('assets/bg.jpg');
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  filter: contrast(105%) saturate(115%) brightness(1.03);
+  margin: 0;
+}
+
+/* Retina Glass Card */
+.glass-retina {
+  background: var(--color-primary);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  box-shadow:
+    inset 0 0 0.5px rgba(255, 255, 255, 0.1),
+    0 4px 16px var(--color-glow),
+    0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  transition: all 0.4s ease;
+}
+
+/* Hover effect (optional) */
+.glass-retina:hover {
+  transform: scale(1.02);
+  box-shadow:
+    inset 0 0 1px rgba(255, 255, 255, 0.15),
+    0 6px 28px rgba(0, 255, 238, 0.35),
+    0 12px 36px rgba(0, 0, 0, 0.3);
+}
+
+/* 3D Card Base */
+.card-3d {
+  box-shadow: var(--shadow-depth);
+  transform: perspective(900px) rotateX(2deg);
+  backdrop-filter: blur(12px) brightness(1.08);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.4s ease;
+}
+  .visual-mode-all {
+    filter:
+      hue-rotate(5deg)
+      saturate(1.6)
+      contrast(1.2)
+      brightness(1.1)
+      contrast(1.1)
+      brightness(0.95)
+      saturate(1.2)
+      brightness(1.3)
+      contrast(1.25)
+      saturate(1.4);
+    transform: perspective(1000px) rotateX(2deg);
+    border-radius: 12px;
+    transition: all 0.5s ease;
+  }
+* {  
+  margin: 0;  
+  padding: 0;  
+  box-sizing: border-box;  
+}  
     body {
       margin: 0;
       background: #111;
@@ -73,6 +151,16 @@
     input[type="file"] {
       margin-top: 10px;
     }
+    
+#videoBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+}
   </style>
 </head>
 <body>
@@ -99,6 +187,11 @@
 
   <!-- Input Pilih File -->
   <input type="file" id="filePicker" accept="audio/*,video/*" multiple />
+  
+  <video autoplay muted loop playsinline id="bgVideo">
+  <source src="assets/video/background.mp4" type="video/mp4" />
+  Browser kamu nggak support video.
+</video>
 
 <button id="installBtn" style="display: none;">Install App</button>
   <script>
