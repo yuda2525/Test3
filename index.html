@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
   <!-- ✅ SEO & Social Share -->
-  <meta name="description" content="Volume Booster PWA app - naikin volume audio dari mic kamu sampai 250%.">
-  <meta property="og:title" content="Volume Booster 250%">
-  <meta property="og:description" content="Booster volume kamu sampai 250% dengan satu klik. Tanpa ribet, tanpa player tambahan.">
   <meta property="og:image" content="assets/icon-512.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://yuda2525.github.io/YOUR-PWA-FOLDER/">
@@ -24,148 +21,185 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <title>Volume Booster 250%</title>
-
   <link rel="stylesheet" href="style.css">
+     <meta name="color-scheme" content="dark light">    
+    <title>Hybrid MP3/MP4 Player</title>
+<link rel="apple-touch-startup-image" href="assets/splash-screen.png">        
+  <meta name="apple-mobile-web-app-title" content="MediaPlayer" />
+
+<!-- Android Theme -->            
+<meta name="mobile-web-app-capable" content="yes" />          
 
   <style>
-
-    :root {
-      --accent: #00ffe4;
-      --bg: #0d0d0f;
-      --glass: rgba(255, 255, 255, 0.06);
-    }
-
     body {
-      background: var(--bg);
+      margin: 0;
+      background: #111;
       color: white;
       font-family: sans-serif;
-      margin: 0;
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    video, audio {
+      width: 90%;
+      max-width: 500px;
+      margin-top: 20px;
+      display: none;
+      border-radius: 16px;
+      box-shadow: 0 0 12px #0ff4;
+    }
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 20px;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: hidden;
     }
-
-    .booster-box {
-      background: var(--glass);
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 255, 238, 0.2);
-      padding: 30px;
-      width: 300px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 1.4em;
-      margin-bottom: 20px;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
-    }
-
-    .boost-label {
-      margin-top: 10px;
-      font-size: 1.2em;
-      color: var(--accent);
-    }
-
     button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      font-size: 1em;
+      background: none;
       border: none;
-      background: var(--accent);
-      color: black;
-      border-radius: 12px;
+      color: white;
       cursor: pointer;
     }
-
-    button:hover {
-      background: #00ffe4cc;
+    select {
+      margin-top: 15px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: #222;
+      color: white;
+    }
+    input[type="file"] {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="booster-box">
-    <h1>Volume Booster</h1>
-    <input type="range" id="volumeRange" min="1" max="2.5" step="0.01" value="1.0" />
-    <div class="boost-label">x <span id="boostValue">1.00</span></div>
-    <button onclick="initAudio()">Aktifkan Booster</button>
+
+  <h2>🎧 Hybrid Player</h2>
+
+  <!-- Mode Switch -->
+  <select id="modeSelect">
+    <option value="audio">🎵 Mode Audio (MP3)</option>
+    <option value="video">🎥 Mode Video (MP4)</option>
+  </select>
+
+  <!-- Pemutar Audio & Video -->
+  <audio id="audioPlayer" controls></audio>
+  <video id="videoPlayer" controls muted loop></video>
+
+  <!-- Kontrol Tombol SVG -->
+  <div class="controls">
+    <button id="prevBtn">⏮️</button>
+    <button id="playBtn">▶️</button>
+    <button id="pauseBtn">⏸️</button>
+    <button id="nextBtn">⏭️</button>
   </div>
 
+  <!-- Input Pilih File -->
+  <input type="file" id="filePicker" accept="audio/*,video/*" multiple />
+
+<button id="installBtn" style="display: none;">Install App</button>
   <script>
-  	  	window.addEventListener("error", e => console.error("❌ Global Error:", e.message));      
-let audioContext;
-let gainNode;
+    const modeSelect = document.getElementById("modeSelect");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const filePicker = document.getElementById("filePicker");
 
-function createVolumePlusPlusFilters(ctx) {
-  const lowPunch = ctx.createBiquadFilter();
-  lowPunch.type = "peaking";
-  lowPunch.frequency.value = 150;
-  lowPunch.Q.value = 0.9;
-  lowPunch.gain.value = 2.8;
+    const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
 
-  const highDetail = ctx.createBiquadFilter();
-  highDetail.type = "peaking";
-  highDetail.frequency.value = 4500;
-  highDetail.Q.value = 1.5;
-  highDetail.gain.value = 2.5;
+    let files = [];
+    let currentIndex = 0;
+    let mode = "audio";
 
-  return [lowPunch, highDetail];
-}
+    // Ganti mode audio/video
+    modeSelect.addEventListener("change", () => {
+      mode = modeSelect.value;
+      audioPlayer.style.display = mode === "audio" ? "block" : "none";
+      videoPlayer.style.display = mode === "video" ? "block" : "none";
+      loadCurrent();
+    });
 
-function setupAudio() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    gainNode = audioContext.createGain();
+    filePicker.addEventListener("change", (e) => {
+      files = Array.from(e.target.files);
+      currentIndex = 0;
+      loadCurrent();
+    });
 
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        const source = audioContext.createMediaStreamSource(stream);
-        const [lowPunch, highDetail] = createVolumePlusPlusFilters(audioContext);
+    function loadCurrent() {
+      const file = files[currentIndex];
+      if (!file) return;
 
-        source.connect(lowPunch);
-        lowPunch.connect(highDetail);
-        highDetail.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+      const url = URL.createObjectURL(file);
 
-        // Set initial gain
-        gainNode.gain.value = parseFloat(range.value);
-      })
-      .catch(err => alert("Mic error: " + err.message));
-  }
-}
+      if (mode === "audio" && file.type.startsWith("audio")) {
+        audioPlayer.src = url;
+        audioPlayer.play();
+        audioPlayer.style.display = "block";
+        videoPlayer.style.display = "none";
+      } else if (mode === "video" && file.type.startsWith("video")) {
+        videoPlayer.src = url;
+        videoPlayer.play();
+        videoPlayer.style.display = "block";
+        audioPlayer.style.display = "none";
+      }
+    }
 
-const range = document.getElementById("volumeRange");
-const boostValue = document.getElementById("boostValue");
+    playBtn.addEventListener("click", () => {
+      if (mode === "audio") audioPlayer.play();
+      else videoPlayer.play();
+    });
 
-range.addEventListener("input", () => {
-  boostValue.textContent = range.value;
+    pauseBtn.addEventListener("click", () => {
+      if (mode === "audio") audioPlayer.pause();
+      else videoPlayer.pause();
+    });
 
-  if (!audioContext) {
-    setupAudio();
-  } else if (gainNode) {
-    gainNode.gain.value = parseFloat(range.value);
-  }
-});
+    prevBtn.addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + files.length) % files.length;
+      loadCurrent();
+    });
 
-function initAudio() {
-  setupAudio();
-}
+    nextBtn.addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % files.length;
+      loadCurrent();
+    });
+    
+    
+    
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
 
-  if ('serviceWorker' in navigator) {      
-    navigator.serviceWorker.register('sw.js')      
-      .then(reg => console.log('✅ Service Worker registered:', reg.scope))      
-      .catch(err => console.error('❌ Service Worker registration failed:', err));      
-  }      
-  
-  
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+
+    installBtn.addEventListener('click', () => {
+      installBtn.style.display = 'none';
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        deferredPrompt = null;
+      });
+    });
+  });
+
+
+  if ('serviceWorker' in navigator) {    
+    navigator.serviceWorker.register('sw.js')    
+      .then(reg => console.log('✅ Service Worker registered:', reg.scope))    
+      .catch(err => console.error('❌ Service Worker registration failed:', err));    
+  }    
+
       console.log("✅ Script Loaded");      
   </script>
 </body>
