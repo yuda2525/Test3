@@ -188,6 +188,11 @@ body {
   <!-- Input Pilih File -->
   <input type="file" id="filePicker" accept="audio/*,video/*" multiple />
   
+  
+  
+<div class="retina-glass">
+	<div id="visualMode" class="content-overlay visual-mode-all">
+		
   <video autoplay muted loop playsinline id="bgVideo">
   <source src="assets/video/background.mp4" type="video/mp4" />
   Browser kamu nggak support video.
@@ -286,6 +291,25 @@ body {
     });
   });
 
+
+      window.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById("visualMode");
+
+  if (!el) {
+    console.warn("Elemen #visualMode tidak ditemukan!");
+    return;
+  }
+
+  console.log("🔵 Mode visual aktif!");
+
+  // Tes tambahkan class manual satu-satu
+  el.classList.add("dolby-vision");
+  el.classList.remove("bravia-cinematic");
+  el.classList.toggle("huawei-vivid");
+
+  // Gabungan semuanya?
+  el.classList.add("visual-mode-all");
+});
 
   if ('serviceWorker' in navigator) {    
     navigator.serviceWorker.register('sw.js')    
