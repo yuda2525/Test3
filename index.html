@@ -642,7 +642,6 @@ function initEQNodes(audioCtx) {
 console.log("🎚 Inisialisasi EQ Filters...");
 
 
-
 lowCutFilter = audioCtx.createBiquadFilter();
 lowCutFilter.type = "highpass";
 lowCutFilter.frequency.value = 30;
@@ -2123,44 +2122,72 @@ bands = [10, 32, 64, 125, 250, 500, 1000, 2000, 4000, 10000, 16000, 20000];
 
 // === 🎧 PRESET EQ DEFINITION  
 const volumeBoostPresets = {
-  "Auto Volume Boost": {
-    eq: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    enhancer: 2.4,
-    compressor: -11,
+  "Volume++": {
+    eq: [2, 1.5, 1.2, 0.8, 0, 1, 1.8, 2.2, 2.8, 3.5, 3, 2],
+    enhancer: 1.4,
+    compressor: -13.5,
+    limiter: {
+      enabled: true,
+      threshold: -2.8
+    },
+    stereoWidth: 1.08,
+    reverb: {
+      enabled: false
+    },
     filters: (ctx) => {
-      const lowLift = ctx.createBiquadFilter();
-      lowLift.type = "lowshelf";
-      lowLift.frequency.value = 90;
-      lowLift.gain.value = 1.8;
+      const lowShelf = ctx.createBiquadFilter();
+      lowShelf.type = "lowshelf";
+      lowShelf.frequency.value = 55;
+      lowShelf.gain.value = 0.3; // Halusin bass lebih soft
 
-      const highLift = ctx.createBiquadFilter();
-      highLift.type = "highshelf";
-      highLift.frequency.value = 9500;
-      highLift.gain.value = 2.5;
+      const subDip = ctx.createBiquadFilter();
+      subDip.type = "peaking";
+      subDip.frequency.value = 90;
+      subDip.Q.value = 1.2;
+      subDip.gain.value = -1.5; // Tambah dip-nya
 
-      return [lowLift, highLift];
+      const lowMidCut = ctx.createBiquadFilter();
+      lowMidCut.type = "peaking";
+      lowMidCut.frequency.value = 280; // Dari 320 → 280
+      lowMidCut.Q.value = 1.2;          // Sedikit lebih sempit
+      lowMidCut.gain.value = -1.6;      // Cut lebih dalam
+
+      const midBody = ctx.createBiquadFilter();
+      midBody.type = "peaking";
+      midBody.frequency.value = 1150;
+      midBody.Q.value = 1.3;
+      midBody.gain.value = 1.2;
+
+const clarity = ctx.createBiquadFilter();
+clarity.type = "peaking";
+clarity.frequency.value = 3800;
+clarity.Q.value = 1.1;
+clarity.gain.value = 0.7;
+
+const highShelf = ctx.createBiquadFilter();
+highShelf.type = "highshelf";
+highShelf.frequency.value = 9000;
+highShelf.gain.value = 0.4;
+
+const air = ctx.createBiquadFilter();
+air.type = "highshelf";
+air.frequency.value = 17000;
+air.gain.value = 0.25;
+
+const harshTamer = ctx.createBiquadFilter();
+harshTamer.type = "peaking";
+harshTamer.frequency.value = 5300;
+harshTamer.Q.value = 4.2;
+harshTamer.gain.value = -1.4;
+
+const shimmer = ctx.createBiquadFilter();
+shimmer.type = "highshelf";
+shimmer.frequency.value = 16000;
+shimmer.gain.value = 0.1;
+
+return [lowShelf, subDip, lowMidCut, midBody, clarity, harshTamer, highShelf, air, shimmer];
     }
   },
-  "Volume++": {
-  eq: [0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 0, -0.5],
-  enhancer: 3.8,
-  compressor: -10,
-  filters: (ctx) => {
-    const lowPunch = ctx.createBiquadFilter();
-    lowPunch.type = "peaking";
-    lowPunch.frequency.value = 150;
-    lowPunch.Q.value = 0.9;
-    lowPunch.gain.value = 2.8;
-
-    const highDetail = ctx.createBiquadFilter();
-    highDetail.type = "peaking";
-    highDetail.frequency.value = 4500;
-    highDetail.Q.value = 1.5;
-    highDetail.gain.value = 2.5;
-
-    return [lowPunch, highDetail];
-  }
-},
 };
 
 
@@ -2170,71 +2197,71 @@ const allPresets = {
   ...volumeBoostPresets
 };
 
-// === EQ PRESET UTAMA  
+
+// === APPLY PRESET TO EQ, COMPRESSOR, VOLUME ===  
 function applyFullPreset(name, preset) {  
-  const sliders = document.querySelectorAll('.slider');  
-  if (!preset || !preset.eq || !sliders.length) {  
-    console.warn(`❌ Preset "${name}" not applied - data missing`);  
-    return;  
-  }  
+  try {  
+    if (!preset || !eqNodes.length) {  
+      console.warn(`❌ Preset "${name}" tidak valid atau EQ belum siap`);  
+      return;  
+    }  
   
-  isUpdatingSlider = true;  
+    // === EQ Sliders  
+    isUpdatingSlider = true;  
+    preset.eq.forEach((db, i) => {  
+      const slider = document.querySelectorAll('.slider')[i];  
+      const clampedDb = Math.max(-12, Math.min(12, db));  
+      if (slider) slider.value = 50 + clampedDb * 5;  
+      if (eqNodes[i]) eqNodes[i].gain.value = clampedDb;  
+    });  
+    isUpdatingSlider = false;  
   
-  preset.eq.forEach((db, i) => {  
-    const slider = sliders[i];  
-    if (!slider) return;  
-    slider.value = 50 + db * 5;  
-    if (eqNodes[i]) eqNodes[i].gain.value = db;  
-  });  
+    // === Enhancer (Gain Node)  
+    if (preset.enhancer !== undefined && gainNode) {  
+      const gain = Math.max(0.1, Math.min(5, preset.enhancer));  
+      gainNode.gain.value = gain;  
+      console.log(`🎛️ Enhancer gain set to: ${gain}`);  
+    }  
   
-  isUpdatingSlider = false;  
+    // === Compressor  
+    if (compressor) {  
+      if (typeof preset.compressor === "number") {  
+        compressor.threshold.value = preset.compressor;  
+      } else if (typeof preset.compressor === "object") {  
+        const { threshold, ratio, attack, release } = preset.compressor;  
+        if (threshold !== undefined) compressor.threshold.value = threshold;  
+        if (ratio !== undefined) compressor.ratio.value = ratio;  
+        if (attack !== undefined) compressor.attack.value = attack;  
+        if (release !== undefined) compressor.release.value = release;  
+      }  
+    }  
   
-  // === Enhancer & Compressor  
-const presenceNode = audioCtx.createGain();
-const brillianceNode = audioCtx.createGain();
-const warmthNode = audioCtx.createGain();
-
-if (presenceNode && typeof presenceNode.gain?.value === 'number') {
-  presenceNode.gain.value = preset.enhancer.presence ?? 0;
-} else {
-  console.warn('Presence node is not defined or not valid');
-}
-
-try {
-  if (preset.enhancer && typeof preset.enhancer === 'object') {
-    presenceNode?.gain && (presenceNode.gain.value = preset.enhancer.presence ?? 0);
-    brillianceNode?.gain && (brillianceNode.gain.value = preset.enhancer.brilliance ?? 0);
-    warmthNode?.gain && (warmthNode.gain.value = preset.enhancer.warmth ?? 0);
-  }
-
-  if (preset.compressor && typeof preset.compressor === 'object') {
-    if (compressor) {
-      compressor.threshold.value = preset.compressor.threshold ?? compressor.threshold.value;
-      compressor.ratio.value = preset.compressor.ratio ?? compressor.ratio.value;
-    }
-  }
-} catch (e) {
-  console.warn("Enhancer/compressor apply error:", e);
-}
+    // === Custom Filters  
+    if (typeof preset.filters === "function" && audioCtx && sourceNode) {  
+      const customFilters = preset.filters(audioCtx);  
+      if (Array.isArray(customFilters)) {  
+        // Disconnect old connections  
+        try { sourceNode.disconnect(); } catch (_) {}  
+        let chain = sourceNode;  
+        customFilters.forEach(node => {  
+          chain.connect(node);  
+          chain = node;  
+        });  
+        chain.connect(audioCtx.destination);  
+        console.log("🎚️ Custom filters applied.");  
+      }  
+    }  
   
-if (preset.enhancer && typeof preset.enhancer === 'object') {
-  if (presenceNode && preset.enhancer.presence !== undefined)
-    presenceNode.gain.value = preset.enhancer.presence;
-
-  if (brillianceNode && preset.enhancer.brilliance !== undefined)
-    brillianceNode.gain.value = preset.enhancer.brilliance;
-
-  if (warmthNode && preset.enhancer.warmth !== undefined)
-    warmthNode.gain.value = preset.enhancer.warmth;
-}
-
-if (preset.compressor && typeof preset.compressor === 'object') {
-  if (preset.compressor.threshold !== undefined)
-    compressor.threshold.value = preset.compressor.threshold;
-
-  if (preset.compressor.ratio !== undefined)
-    compressor.ratio.value = preset.compressor.ratio;
-}
+    // === Extra Nodes  
+    if (preset.extraNodes) {  
+      Object.entries(preset.extraNodes).forEach(([nodeName, values]) => {  
+        const node = window[nodeName];  
+        if (!node) return;  
+        Object.entries(values).forEach(([param, val]) => {  
+          if (node[param] !== undefined) node[param].value = val;  
+        });  
+      });  
+    }  
   
   // === Custom logic: Flat Mode  
   if (name === "Flat") {  
@@ -2271,66 +2298,50 @@ if (preset.compressor && typeof preset.compressor === 'object') {
       smartLimiter.threshold.value = -3;  
       smartLimiter.ratio.value = 15;  
     }  
-  
+      
     console.log("🔥 Volume++ preset aktif: full power!");  
   }  
   
-  lastManualPreset = name;  
-  console.log(`✅ Applied: ${name} | Enhancer: ${preset.enhancer} | Compressor: ${preset.compressor}`);  
+    // === VolumeBoost (Preset custom logic)  
+    if (preset.volumeBoost !== undefined && gainNode) {  
+      const vol = Math.max(0, Math.min(2, preset.volumeBoost));  
+      gainNode.gain.value = vol;  
+      console.log(`🔊 VolumeBoost: ${vol}`);  
+    }  
+  
+    lastManualPreset = name;  
+    console.log(`✅ Applied: ${name} | Enhancer: ${preset.enhancer} | Compressor: ${JSON.stringify(preset.compressor)}`);  
+  } catch (err) {  
+    console.error("❌ applyFullPreset error:", err);  
+  }  
 }  
-
-
-function applyPresetSmart(name, source = "preset") {
-  if (!audioCtx || !sourceNode) initAudioContext();
-
-  console.log(`👉 applyPresetSmart called: name=${name}, source=${source}`);
-
-  if (audio.paused) {
-    console.warn(`⏳ Audio belum diputar. EQ '${name}' + Auto Volume Boost disimpan...`);
-    pendingEQPreset = name; // diganti, bukan pendingPreset biasa
-  } else {
-    applyPresetCombined(name, "Auto Volume Boost"); // ✅ inject auto
-  }
-
-  if (source === "preset") lastEQPreset = name;
-  else lastEQPreset = name;
-
-  lastManualPreset = name;
-  console.log(`✅ lastManualPreset set to: ${lastManualPreset}`);
-}
   
-  function saveLastPreset(eq, vol) {
-  localStorage.setItem("lastEQ", eq);
-  localStorage.setItem("lastVol", vol);
-  console.log(`💾 Preset disimpan: EQ='${eq}' | Vol='${vol}'`);
-}
+// === APPLY COMBINED EQ + VOLUME PRESETS ===  
+function applyPresetCombined(eqName, volName = "Volume++") {  
+  if (!eqName) {  
+    console.warn("❌ EQ preset kosong, dibatalkan");  
+    return;  
+  }  
   
-let pendingPreset = null; // Optional  
-const { eq, vol } = loadLastPreset();
-let pendingEQPreset = eq;
-
-let lastEQPreset = eq;
-let defaultVolPreset = vol;
-let lastVolPreset = vol; // ⬅️ ini penting!
-
-// ✅ Kombinasi preset
-function applyPresetCombined(eqName, volName = "Volume++") {
-  if (!eqName) {
-    console.warn("❌ EQ preset kosong, dibatalkan");
-    return;
-  }
-
-  const eqPreset = allPresets[eqName];
-  const volPreset = allPresets[volName] || allPresets["Volume++"];
-
-  if (!eqPreset) {
-    console.warn(`❌ EQ preset '${eqName}' tidak ditemukan`);
-    return;
-  }
-
-  console.log(`🎛️ Combined preset: EQ='${eqName}' + Volume='${volName}'`);
-
-  applyFullPreset(eqName, eqPreset);
+  const eqPreset = allPresets[eqName];  
+  const volPreset = allPresets[volName];  
+  
+  if (!eqPreset) {  
+    console.warn(`❌ EQ preset '${eqName}' tidak ditemukan`);  
+    return;  
+  }  
+  
+  const fullPreset = { ...eqPreset };  
+  
+  // Gabungkan enhancer dan compressor dari volPreset (kecuali kalo eqName udah "Volume++")  
+  if (volPreset && eqName !== "Volume++") {  
+    if (volPreset.enhancer !== undefined) fullPreset.enhancer = volPreset.enhancer;  
+    if (volPreset.compressor !== undefined) fullPreset.compressor = volPreset.compressor;  
+  }  
+  
+  console.log(`🎛️ Combined preset: EQ='${eqName}' + Volume='${volName}'`);  
+  applyFullPreset(eqName, fullPreset);  
+  
 
   if (volPreset) {
     if (volPreset.enhancer !== undefined && enhancer)
@@ -2340,77 +2351,163 @@ function applyPresetCombined(eqName, volName = "Volume++") {
     console.log(`🔊 Volume preset injected: '${volName}'`);
   }
 
-  // ✅ SIMPAN YANG TERAKHIR
-  lastEQPreset = eqName;
-  lastVolPreset = volName;
-  saveLastPreset(eqName, volName);
-}
+  lastVolPreset = volName;  
+  saveLastPreset(eqName, volName);  
+}  
   
-function saveLastPreset(eq, vol) {
-  localStorage.setItem("lastEQ", eq);
-  localStorage.setItem("lastVol", vol);
-}
+// === SMART APPLY (based on playing status)  
+function applyPresetSmart(name) {  
+  if (!audioCtx || !sourceNode) initAudioContext();  
+  
+  const audio = document.getElementById("audioPlayer") || document.getElementById("media");  
+  
+  if (audio.paused) {  
+    pendingEQPreset = name;  
+  } else {  
+    applyPresetCombined(name, "Volume++");  
+  }  
+  
+  lastManualPreset = name;  
+}  
+  
+// === SAVE/LOAD TO LOCALSTORAGE  
+function saveLastPreset(eq, vol) {  
+  localStorage.setItem("lastEQ", eq);  
+  localStorage.setItem("lastVol", vol);  
+}  
+  
+function loadLastPreset() {  
+  return {  
+    eq: localStorage.getItem("lastEQ") || "Flat",  
+    vol: localStorage.getItem("lastVol") || "Volume++"  
+  };  
+}  
+  
 
-function loadLastPreset() {
-  return {
-    eq: localStorage.getItem("lastEQ") || "Flat",
-    vol: localStorage.getItem("lastVol") || "Volume++"
-  };
-}
+  
+const audioPipelines = {}; // Untuk simpan chain per player (by ID/nama)
 
-// ✅ ON LOAD (nunggu DOM + slider siap)
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    const sliders = document.querySelectorAll('.slider');
-    if (!allPresets["Flat"] || !Array.isArray(allPresets["Flat"].eq)) return;
-    if (sliders.length < 12) return;
+function setupAudioPipeline(element, playerId = "default") {
+  initAudioContext();
 
-    const eq = lastEQPreset || pendingEQPreset || "Flat";
-    const vol = lastVolPreset || defaultVolPreset || "Volume++";
-
-    applyPresetCombined(eq, vol);
-
-    // ✅ Sinkronkan UI dropdown
-    presetSelect.value = eqPresets[eq] ? eq : "Flat";
-  }, 300);
-});
-
-// === AUTO APPLY SAAT PLAY  
-window.addEventListener("DOMContentLoaded", async () => {  
-  const player = document.getElementById("audioPlayer");  
-
-  await initAudioContext();          // 1. Init audioCtx & EQ nodes  
-
-  // === Saat audio diputar, baru apply pending preset  
-// ✅ CUKUP pake last yang dimuat dari localStorage
-const { eq, vol } = loadLastPreset();
-lastEQPresets = eq;
-lastVolPreset = vol;
-
-// Apply saat play
-if (false) {
-  player.addEventListener("play", () => {
-    const eq = allPresets[lastEQPreset];
-    const vol = allPresets[defaultVolPreset] || allPresets["Volume++"];
-
-    applyPresetCombined(lastEQPresets, defaultVolPreset);
-    console.log(`▶️ Player play → applyPresetCombined('${lastEQPresets}', '${defaultVolPreset}')`);
-
-    pendingPreset = null;
-  });
-}
-
-  // === Saat data lagu siap, apply preset terakhir  
-audio.addEventListener("loadeddata", () => {
-  if (lastEQPreset && lastVolPreset) {
-    applyPresetCombined(lastEQPreset, lastVolPreset);
-    console.log(`🎯 Preset aktif: '${lastEQPreset}' + '${lastVolPreset}'`);
+  // Jika sebelumnya sudah ada, disconnect semua
+  if (audioPipelines[playerId]?.source) {
+    try { audioPipelines[playerId].source.disconnect(); } catch (e) {}
   }
-});
+
+    const frequencies = [10, 32, 64, 125, 250, 500, 1000, 2000, 4000, 10000, 16000, 20000];  
+    eqNodes = frequencies.map(freq => {  
+      const f = audioCtx.createBiquadFilter();  
+      f.type = "peaking";  
+      f.frequency.value = freq;  
+      f.Q.value = 1;  
+      f.gain.value = 0;  
+      return f;  
+    });  
   
-  // ✅ SIMPAN PILIHAN ADVANCE + VOLUME
-  saveLastPreset(selected, defaultVolPreset);  
-});
+  // Connect EQ → Compressor → Gain → Output  
+  sourceNode.connect(eqNodes[0]);  
+  for (let i = 0; i < eqNodes.length - 1; i++) {  
+    eqNodes[i].connect(eqNodes[i + 1]);  
+  }  
+  eqNodes.at(-1).connect(compressor);  
+  compressor.connect(gainNode);  
+  gainNode.connect(audioCtx.destination);  
+  
+  // Simpan ke audioPipelines
+  audioPipelines[playerId] = {
+    source,
+    eq,
+    compressor,
+    gain,
+    element
+  };
+
+  console.log(`✅ Audio pipeline siap untuk "${playerId}"`);
+
+  // Apply preset default
+  const presetName = presetSelect?.value || "Flat";
+  if (eqPresets[presetName]) {
+    applyFullPresetTo(eqPresets[presetName], audioPipelines[playerId]);
+  }
+}
+  
+  
+// === Auto apply preset saat audio diputar  
+const videoElement = document.getElementById("media");  
+const audioElement = document.getElementById("audio");  
+  
+// Sinkronisasi video → audio  
+videoElement.addEventListener("play", () => {  
+  audioElement.play();  
+});  
+videoElement.addEventListener("pause", () => {  
+  audioElement.pause();  
+});  
+videoElement.addEventListener("seeking", () => {  
+  audioElement.currentTime = videoElement.currentTime;  
+});  
+  
+// Sinkronisasi audio → preset & gainNode (EQ)  
+audioElement.addEventListener("play", async () => {  
+  if (!audioElement.src) return;  
+  
+  if (autoApplyPresetOnPlay) {  
+    const preset = allPresets[lastManualPreset];  
+    if (!preset) return;  
+  
+    try {  
+      await audioContext.resume();  
+  
+      // Pastikan koneksi masih aman  
+      try { gainNode.disconnect(); } catch (_) {}  
+      gainNode.connect(audioContext.destination);  
+  
+      // HANYA applyFullPreset, karena gain sudah diset di luar  
+      applyFullPreset(lastManualPreset, preset);  
+    } catch (err) {  
+      console.warn("⚠️ AudioContext resume gagal:", err);  
+    }  
+  }  
+});  
+  
+// === FILE PICKER LOGIC ===  
+fileInput.addEventListener('change', e => {  
+  const file = e.target.files[0];  
+  if (!file) return;  
+  
+  const url = URL.createObjectURL(file);  
+  const isVideo = file.type.startsWith("video");  
+  
+  if (isVideo) {  
+    mediaEl.src = url;  
+    mediaEl.hidden = false;  
+    audioEl.hidden = true;  
+    setupAudioPipeline(mediaEl);  
+  } else {  
+    audioEl.src = url;  
+    audioEl.hidden = false;  
+    mediaEl.hidden = true;  
+    setupAudioPipeline(audioEl);  
+  }  
+});  
+  
+// === DROPDOWN CHANGE LISTENER ===  
+presetSelect.addEventListener("change", () => {  
+  applyPresetSmart(presetSelect.value);  
+});  
+  
+// === AUTO LOAD LAST PRESET ===  
+document.addEventListener("DOMContentLoaded", () => {  
+  createEQSliders();  
+  
+  const { eq, vol } = loadLastPreset();  
+  applyPresetCombined(eq, vol);  
+  
+  // Set dropdown UI  
+  presetSelect.value = eqPresets[eq] ? eq : "Flat";  
+});  
+
 
     // ============ ▶️ PLAYER CONTROL ============  
 function formatTime(seconds) {  
@@ -2526,77 +2623,6 @@ function stopSlowPan() {
   clearInterval(panTimer);
   panTimer = null;
 }
-
-
-    function applyPreset(presetName) {
-      const preset = eqPresets[presetName];
-      eqNodes.forEach((node, i) => {
-        node.gain.value = preset.eq[i] || 0;
-      });
-
-      compressor.threshold.value = preset.compressor.threshold;
-      compressor.ratio.value = preset.compressor.ratio;
-      compressor.attack.value = preset.compressor.attack;
-      compressor.release.value = preset.compressor.release;
-    }
-
-    function setupAudioPipeline(element) {
-      if (sourceNode) sourceNode.disconnect();
-      eqNodes.forEach(n => n.disconnect());
-      if (compressor) compressor.disconnect();
-      if (gainNode) gainNode.disconnect();
-
-      sourceNode = audioCtx.createMediaElementSource(element);
-
-      // Create EQ filters (12 band peaking filters)
-      eqNodes = Array.from({ length: 12 }, (_, i) => {
-        const f = audioCtx.createBiquadFilter();
-        f.type = "peaking";
-        f.frequency.value = 32 * Math.pow(2, i); // log scale
-        f.Q.value = 1.2;
-        f.gain.value = 0;
-        return f;
-      });
-
-      compressor = audioCtx.createDynamicsCompressor();
-      gainNode = audioCtx.createGain();
-
-      // Connect chain
-      sourceNode.connect(eqNodes[0]);
-      for (let i = 0; i < eqNodes.length - 1; i++) {
-        eqNodes[i].connect(eqNodes[i + 1]);
-      }
-      eqNodes.at(-1).connect(compressor);
-      compressor.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      applyPreset(presetSelect.value);
-    }
-
-    fileInput.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const url = URL.createObjectURL(file);
-      const isVideo = file.type.startsWith("video");
-
-      if (isVideo) {
-        mediaEl.src = url;
-        mediaEl.hidden = false;
-        audioEl.hidden = true;
-        setupAudioPipeline(mediaEl);
-      } else {
-        audioEl.src = url;
-        audioEl.hidden = false;
-        mediaEl.hidden = true;
-        setupAudioPipeline(audioEl);
-      }
-    });
-
-    presetSelect.addEventListener("change", () => {
-      applyPreset(presetSelect.value);
-    });
-    
     
 let running = false;
 let rafId;
