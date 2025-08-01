@@ -115,23 +115,6 @@ body {
     border-radius: 12px;
     transition: all 0.5s ease;
   }
-  
-  @supports (backdrop-filter: blur(10px)) {
-  .glass {
-    backdrop-filter: blur(10px);
-  }
-}
-  
-  .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
-  border-radius: 15px;
-}
-  
-  .dynamic-light {
-  background: radial-gradient(circle at var(--x) var(--y), rgba(255,255,255,0.1), transparent 80%);
-}
 
     body {
       margin: 0;
@@ -160,7 +143,6 @@ body {
       margin: 0.2rem;
     }
     
-      
     .eq-wrapper {
       display: flex;
       flex-direction: column;
@@ -264,19 +246,6 @@ body {
   transition: opacity 0.3s ease;
 }
 
-#realisticPlayer {
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  filter: brightness(1.1) contrast(1.25) saturate(1.15)
-          drop-shadow(0 0 30px rgba(0,255,255,0.1))
-          drop-shadow(0 0 40px rgba(255,255,255,0.05))
-          blur(0.3px);
-  transition: all 1s ease-in-out;
-  background: radial-gradient(circle at center, #111 10%, #000 100%);
-}
-
-
   #toggleUIPanel {  
     position: fixed;  
     top: 15px;  
@@ -306,6 +275,35 @@ body {
     opacity: 0;  
     padding: 0 10px;  
   }  
+  
+        @supports (backdrop-filter: blur(10px)) {
+  .glass {
+    backdrop-filter: blur(10px);
+  }
+}
+    
+      .glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+  border-radius: 15px;
+}
+  
+  .dynamic-light {
+  background: radial-gradient(circle at var(--x) var(--y), rgba(255,255,255,0.1), transparent 80%);
+}
+
+    #realisticPlayer {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  filter: brightness(1.1) contrast(1.25) saturate(1.15)
+          drop-shadow(0 0 30px rgba(0,255,255,0.1))
+          drop-shadow(0 0 40px rgba(255,255,255,0.05))
+          blur(0.3px);
+  transition: all 1s ease-in-out;
+  background: radial-gradient(circle at center, #111 10%, #000 100%);
+}
 
   </style>  
 <link href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap" rel="stylesheet">
@@ -322,8 +320,7 @@ body {
 
 <!-- Tombol toggle -->  
 <button id="toggleUIPanel" onclick="toggleUIPreset()"> UI Panel</button>  
-<div class="retina-glass">
-	<div id="visualMode" class="content-overlay visual-mode-all">
+
 <!-- Panel Preset dan File Picker -->  
 <div id="uiControls" class="controls-wrapper">  
   <input type="file" id="fileInput" accept="audio/*,video/*"> 
@@ -381,7 +378,13 @@ body {
     </label>
   </div>
 
-  <button onclick="openFullscreen()">Fullscreen</button>
+<div class="retina-glass">
+	<div id="visualMode" class="content-overlay visual-mode-all">
+		
+<div class="bg-cover"></div>  
+<div class="content">  
+	<div class="bg-vivid"></div>  
+<div class="glass-mask"></div>  
   
 <body>  
 <canvas id="hiddenCanvas" style="display: none;"></canvas>
